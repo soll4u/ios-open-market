@@ -10,7 +10,8 @@ class ItemsGridViewController: UIViewController {
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var indicator: UIActivityIndicatorView!
     
-    private let manager = NetworkManager(session: URLSession.shared)
+//    private let manager = NetworkManager(session: URLSession.shared)
+    private let manager = NetworkManager(session: MockURLSession())
     private var items: [Page.Item]?
     private var isNotLoading = true
     private var lastPage = 1
@@ -19,14 +20,15 @@ class ItemsGridViewController: UIViewController {
         super.viewDidLoad()
         
         initializeItems()
-        collectionView.collectionViewLayout = configureItemSize()
+        // MARK: 3번 방식 - itemSize로 계산하기 방식. Estimate Size는 스토리보드에서 바꿀 수 있어요
+//        collectionView.collectionViewLayout = configureItemSize()
     }
     
     private func initializeItems() {
         let serverURL = "https://camp-open-market-2.herokuapp.com/items/\(lastPage)"
         let mockURL = MockURL.mockItems.description
         
-        guard let url = URL(string: serverURL) else { return }
+        guard let url = URL(string: mockURL) else { return }
         
         manager.fetchData(url: url) { (result: Result<Page, Error>) in
             switch result {
@@ -47,7 +49,7 @@ class ItemsGridViewController: UIViewController {
         
         let layout = UICollectionViewFlowLayout()
         let defaultInset: CGFloat = 8
-        let numberOfItemPerRow: CGFloat = 2
+        let numberOfItemPerRow: CGFloat = 4
         let sizeRatio: CGFloat = 1.7
         
         layout.sectionInset = UIEdgeInsets(top: defaultInset,
@@ -55,7 +57,7 @@ class ItemsGridViewController: UIViewController {
                                            bottom: .zero,
                                            right: defaultInset)
         
-        let contentWidth = collectionView.bounds.width - (layout.sectionInset.left + layout.sectionInset.right)
+        let contentWidth = collectionView.bounds.width
         
         let cellWidth = (contentWidth - layout.minimumInteritemSpacing) / numberOfItemPerRow
         let cellHeight = cellWidth * sizeRatio
@@ -78,7 +80,7 @@ extension ItemsGridViewController: UICollectionViewDataSource {
                                                             for: indexPath) as? GridItemCollectionViewCell
         else { return UICollectionViewCell() }
         
-        cell.initialize(item: item, indexPath: indexPath)
+        cell.initialize(item: item, indexPath: indexPath, collectionView: collectionView)
         
         return cell
     }
@@ -114,5 +116,30 @@ extension ItemsGridViewController: UICollectionViewDelegate {
                 }
             }
         }
+    }
+}
+
+// MARK: 1, 2번 방식 - 메서드에서 셀크기를 리턴해주는 방식. Estimate Size는 스토리보드에서 바꿀 수 있어요
+extension ItemsGridViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        sizeForItemAt indexPath: IndexPath) -> CGSize
+    {
+        guard let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else { return CGSize.zero}
+        let defaultInset: CGFloat = 8
+        let numberOfItemPerRow: CGFloat = 4
+        let sizeRatio: CGFloat = 1.7
+
+        layout.sectionInset = UIEdgeInsets(top: defaultInset,
+                                           left: defaultInset,
+                                           bottom: .zero,
+                                           right: defaultInset)
+
+        let contentWidth = collectionView.bounds.width - (layout.sectionInset.left + layout.sectionInset.right)
+
+        let cellWidth = (contentWidth - layout.minimumInteritemSpacing) / numberOfItemPerRow
+        let cellHeight = cellWidth * sizeRatio
+
+        return CGSize(width: cellWidth, height: cellHeight)
     }
 }

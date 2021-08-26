@@ -16,20 +16,29 @@ class GridItemCollectionViewCell: UICollectionViewCell {
     
     private var urlString: String?
     
-    func initialize(item: Page.Item, indexPath: IndexPath) {
-        updateImage(item: item, indexPath: indexPath)
+    func initialize(item: Page.Item, indexPath: IndexPath, collectionView: UICollectionView) {
+        updateImage(item: item, indexPath: indexPath, collectionView: collectionView)
         configureLabels(item: item)
         configureCellBorder()
     }
     
-    private func updateImage(item: Page.Item, indexPath: IndexPath) {
+    private func updateImage(item: Page.Item, indexPath: IndexPath, collectionView: UICollectionView) {
         let currentURLString = item.thumbnails[0]
         self.urlString = currentURLString
         
         ImageLoader.shared.loadImage(from: currentURLString) { imageData in
-            if self.urlString == currentURLString {
+            print("-indexPath(for:) \(collectionView.indexPath(for: self))")
+            print("cellForItem(at:) \(collectionView.cellForItem(at: indexPath)?.frame.width)")
+            
+            // MARK: indexPath 비교
+            if indexPath == collectionView.indexPath(for: self) {
                 self.thumbnailImageView?.image = imageData
             }
+            
+            // MARK: 셀의 프로퍼티 비교
+//            if self.urlString == currentURLString {
+//                self.thumbnailImageView?.image = imageData
+//            }
         }
     }
     
