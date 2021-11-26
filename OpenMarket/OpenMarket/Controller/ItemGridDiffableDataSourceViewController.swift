@@ -72,12 +72,9 @@ class ItemGridDiffableDataSourceViewController: UIViewController {
     }
     
     private func applySnapshot() {
+        guard let items = items else { return }
         var snapshot = NSDiffableDataSourceSnapshot<ItemListSection, Page.Item>()
         snapshot.appendSections([.main])
-        guard let items = items else {
-            print("items가 nil")
-            return
-        }
         snapshot.appendItems(items)
         itemListDataSource?.apply(snapshot, animatingDifferences: false)
     }
