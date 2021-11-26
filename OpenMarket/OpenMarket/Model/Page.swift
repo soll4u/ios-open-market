@@ -11,7 +11,7 @@ struct Page: Decodable {
     let page: Int
     let items: [Page.Item]
     
-    struct Item: Decodable {
+    struct Item: Decodable, Hashable {
         let id: Int
         let title: String
         let price: Int
@@ -25,6 +25,14 @@ struct Page: Decodable {
             case id, title, price, currency, stock, thumbnails
             case discountedPrice = "discounted_price"
             case registrationDate = "registration_date"
+        }
+        
+        static func == (lhs: Item, rhs: Item) -> Bool {
+            lhs.id == rhs.id
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
         }
     }
 }
